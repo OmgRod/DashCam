@@ -1,0 +1,30 @@
+{
+	"geode": "4.6.1",
+	"gd": {
+		"win": "2.2074",
+		"android": "2.2074",
+		"mac": "2.2074",
+		"ios": "2.2074"
+	},
+	"id": "omgrod.dashcam",
+	"name": "DashCam",
+	"version": "v1.0.0",
+	"developer": "OmgRod",
+	"description": "GD screenshot/recorder mod, has different filters too!",
+	"links": {
+		"community": "https://discord.gg/vK3DuqJwyW",
+		"homepage": "https://gdsurge.omgrod.me",
+		"source": "https://github.com/OmgRod/GD-Surge"
+	},
+	"dependencies": {
+		"geode.custom-keybinds": {
+			"version": ">=1.10.4",
+			"platforms": ["android", "mac", "win"],
+			"importance": "required"
+		},
+		"geode.node-ids": {
+			"version": ">=1.21.1",
+			"importance": "required"
+		}
+	}
+}
