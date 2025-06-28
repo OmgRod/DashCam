@@ -126,9 +126,7 @@ bool ScreenshotsPopup::setup() {
 }
 
 void ScreenshotsPopup::onScreenshotClicked(CCObject* sender) {
-    // You can implement a preview popup or file action here
-    // CCMenuItemSpriteExtra* item = static_cast<CCMenuItemSpriteExtra*>(sender);
-    // CCLOG("Screenshot clicked");
+    FLAlertLayer::create("Test", fmt::format("You clicked screenshot <cr>{}</c>", sender->getTag()).c_str(), "OK")->show();
 }
 
 std::vector<std::filesystem::path> ScreenshotsPopup::getScreenshotPaths() {
