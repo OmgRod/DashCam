@@ -25,6 +25,11 @@
 		"geode.node-ids": {
 			"version": ">=1.21.1",
 			"importance": "required"
+		},
+		"eclipse.ffmpeg-api": {
+			"version": ">=1.2.2",
+			"importance": "required",
+			"platforms": ["android", "mac", "win"]
 		}
 	}
 }

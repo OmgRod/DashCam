@@ -31,9 +31,11 @@ $execute {
 	new EventListener([=](InvokeBindEvent* event) {
         if (event->isDown()) {
             if (!screenshot) {
-                auto utils = new Utils;
-                utils->screenshot();
-                delete utils;
+                if (!Utils::shared()->screenshot()) {
+                    Notification::create("Unable to take screenshot.", NotificationIcon::Error)->show();
+                } else {
+                    Notification::create("Screenshot successfully taken!", NotificationIcon::Success)->show();
+                }
             }
             screenshot = true;
             return ListenerResult::Stop;
@@ -42,6 +44,29 @@ $execute {
         }
         return ListenerResult::Propagate;
     }, InvokeBindFilter(nullptr, "screenshot"_spr));
+
+    new EventListener([=](InvokeBindEvent* event) {
+        if (event->isDown()) {
+            if (!recording) {
+                if (!Utils::shared()->isRecording()) {
+                    if (!Utils::shared()->startRecording()) {
+                        Notification::create("Unable to start recording video.", NotificationIcon::Error)->show();
+                    }
+                } else {
+                    if (!Utils::shared()->stopRecording()) {
+                        Notification::create("Unable to save video.", NotificationIcon::Error)->show();
+                    } else {
+                        Notification::create("Video successfully taken!", NotificationIcon::Success)->show();
+                    }
+                }
+            }
+            recording = true;
+            return ListenerResult::Stop;
+        } else {
+            recording = false;
+        }
+        return ListenerResult::Propagate;
+    }, InvokeBindFilter(nullptr, "record"_spr));
 }
 
 #endif
