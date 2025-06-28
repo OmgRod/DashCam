@@ -114,7 +114,7 @@ namespace dashcam {
             return true;
         }
 
-        void pushFrameFromMainThread() {
+        /*void pushFrameFromMainThread() {
             if (!m_recording) return;
 
             GLint viewport[4];
@@ -240,7 +240,7 @@ namespace dashcam {
 
         bool isRecording() {
             return m_recording.load();
-        }
+        }*/
 
     private:
         ffmpeg::Recorder m_recorder;

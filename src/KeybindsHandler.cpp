@@ -1,6 +1,5 @@
-#ifndef GEODE_IS_IOS
-
 #include <Geode/Geode.hpp>
+#include <Geode/ui/GeodeUI.hpp>
 #include <geode.custom-keybinds/include/Keybinds.hpp>
 #include "Utils.hpp"
 
@@ -11,6 +10,8 @@ using namespace dashcam;
 bool screenshot = false;
 bool recording = false;
 
+class ModSettingsPopup : public CCNode {};
+
 $execute {
     BindManager::get()->registerBindable({
         "screenshot"_spr,
@@ -20,13 +21,21 @@ $execute {
         "DashCam"
     });
 
-	BindManager::get()->registerBindable({
+    BindManager::get()->registerBindable({
+        "mod-settings"_spr,
+        "Mod Settings",
+        "Opens the mod's settings.",
+        { Keybind::create(KEY_F8, Modifier::Control) },
+        "DashCam"
+    });
+
+	/*BindManager::get()->registerBindable({
         "record"_spr,
         "Record",
         "Records your current gameplay. Stop recording by pressing Ctrl+F7 again.",
         { Keybind::create(KEY_F7, Modifier::Control) },
         "DashCam"
-    });
+    });*/
 
 	new EventListener([=](InvokeBindEvent* event) {
         if (event->isDown()) {
@@ -47,6 +56,18 @@ $execute {
 
     new EventListener([=](InvokeBindEvent* event) {
         if (event->isDown()) {
+            if (auto popup = CCDirector::sharedDirector()->getRunningScene()->getChildByType<ModSettingsPopup>(0)) {
+                popup->removeFromParentAndCleanup(true);
+            } else {
+                openSettingsPopup(Mod::get(), !Loader::get()->getLoadedMod("geode.loader")->getSettingValue<bool>("enable-geode-theme"));
+            }
+            return ListenerResult::Stop;
+        }
+        return ListenerResult::Propagate;
+    }, InvokeBindFilter(nullptr, "mod-settings"_spr));
+
+    /*new EventListener([=](InvokeBindEvent* event) {
+        if (event->isDown()) {
             if (!recording) {
                 if (!Utils::shared()->isRecording()) {
                     if (!Utils::shared()->startRecording()) {
@@ -66,7 +87,5 @@ $execute {
             recording = false;
         }
         return ListenerResult::Propagate;
-    }, InvokeBindFilter(nullptr, "record"_spr));
+    }, InvokeBindFilter(nullptr, "record"_spr));*/
 }
-
-#endif
