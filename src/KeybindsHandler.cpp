@@ -43,7 +43,27 @@ $execute {
                 if (!Utils::shared()->screenshot()) {
                     Notification::create("Unable to take screenshot.", NotificationIcon::Error)->show();
                 } else {
-                    Notification::create("Screenshot successfully taken!", NotificationIcon::Success)->show();
+                    auto winSize = CCDirector::sharedDirector()->getWinSize();
+
+                    if (Mod::get()->getSettingValue<bool>("flash-sound")) {
+                        FMODAudioEngine::sharedEngine()->playEffect("camera-shutter.mp3"_spr);
+                    }
+
+                    if (Mod::get()->getSettingValue<bool>("camera-flash")) {
+                        auto cameraFlash = CCLayerColor::create(ccc4(255, 255, 255, 255), winSize.width, winSize.height);
+                        cameraFlash->setPosition(ccp(0, 0));
+                        cameraFlash->setZOrder(INT_MAX);
+
+                        auto scene = CCDirector::sharedDirector()->getRunningScene();
+                        if (scene && cameraFlash) {
+                            scene->addChild(cameraFlash);
+
+                            auto fade = CCFadeOut::create(0.25f);
+                            auto remove = CCCallFunc::create(cameraFlash, callfunc_selector(CCLayerColor::removeFromParent));
+                            auto seq = CCSequence::create(fade, remove, nullptr);
+                            cameraFlash->runAction(seq);
+                        }
+                    }
                 }
             }
             screenshot = true;

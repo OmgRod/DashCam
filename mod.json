@@ -32,6 +32,10 @@
 		}
 	},
 	"settings": {
+		"view-screenshots": {
+			"type": "custom:button",
+			"name": "Screenshots"
+		},
 		"flash-title": {
 			"type": "title",
 			"name": "Camera Flash",
@@ -59,12 +63,18 @@
 			"one-of": ["None", "Grayscale", "Sepia", "Saturated", "Cool", "Warm"],
 			"description": "Select a filter to apply to your screenshots and recordings. Filters can change the mood and appearance of your captures."
 		},
-		"shaders": {
+		"shader": {
 			"name": "Shader",
 			"type": "string",
 			"default": "None",
 			"one-of": ["None", "Invert", "Pixelated", "Blur"],
 			"description": "Select a shader to apply to your screenshots and recordings. Shaders can change the visual style and effects of your captures."
 		}
+	},
+	"resources": {
+		"files": [
+			"res/shaders/*",
+			"res/sounds/*"
+		]
 	}
 }
