@@ -4,12 +4,12 @@
 
 using namespace geode::prelude;
 
-class ScreenshotsPopup : public geode::Popup<> {
+class ScreenshotsListPopup : public geode::Popup<> {
 protected:
     bool setup() override;
     std::vector<std::filesystem::path> getScreenshotPaths();
     void onScreenshotClicked(CCObject*);
 
 public:
-    static ScreenshotsPopup* create();
+    static ScreenshotsListPopup* create();
 };

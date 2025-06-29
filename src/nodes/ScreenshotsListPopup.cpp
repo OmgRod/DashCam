@@ -1,8 +1,11 @@
-#include "ScreenshotsPopup.hpp"
+#include "ScreenshotsListPopup.hpp"
+#include "ScreenshotPopup.hpp"
+#include "../Utils.hpp"
 
 using namespace geode::prelude;
+using namespace dashcam;
 
-bool ScreenshotsPopup::setup() {
+bool ScreenshotsListPopup::setup() {
     this->setTitle("Screenshots");
 
     float scrollWidth = m_mainLayer->getContentWidth() * 0.8f;
@@ -36,6 +39,7 @@ bool ScreenshotsPopup::setup() {
     int count = 0;
     CCMenu* row = nullptr;
     std::vector<CCMenuItemSpriteExtra*> rowItems;
+    std::vector<std::tuple<int, std::filesystem::path, std::string>> screenshotData;
 
     float maxContentWidth = 0.f;
 
@@ -80,13 +84,19 @@ bool ScreenshotsPopup::setup() {
         auto item = CCMenuItemSpriteExtra::create(
             sprite,
             this,
-            menu_selector(ScreenshotsPopup::onScreenshotClicked)
+            menu_selector(ScreenshotsListPopup::onScreenshotClicked)
         );
         item->setTag(static_cast<int>(i));
         item->setAnchorPoint({ 0.5f, 0.5f });
         item->ignoreAnchorPointForPosition(true);
         row->addChild(item);
         rowItems.push_back(item);
+
+        screenshotData.emplace_back(
+            static_cast<int>(i),
+            screenshots[i],
+            screenshots[i].filename().string()
+        );
 
         ++count;
     }
@@ -122,14 +132,25 @@ bool ScreenshotsPopup::setup() {
     scroll->m_contentLayer->updateLayout();
     scroll->scrollToTop();
 
+    Utils::shared()->setScreenshots(screenshotData);
+
     return true;
 }
 
-void ScreenshotsPopup::onScreenshotClicked(CCObject* sender) {
-    FLAlertLayer::create("Test", fmt::format("You clicked screenshot <cr>{}</c>", sender->getTag()).c_str(), "OK")->show();
+void ScreenshotsListPopup::onScreenshotClicked(CCObject* sender) {
+    auto item = static_cast<CCMenuItemSpriteExtra*>(sender);
+    int tag = item->getTag();
+
+    const auto& screenshots = Utils::shared()->getScreenshots();
+    for (const auto& tup : screenshots) {
+        if (std::get<0>(tup) == tag) {
+            ScreenshotPopup::create(tup)->show();
+            break;
+        }
+    }
 }
 
-std::vector<std::filesystem::path> ScreenshotsPopup::getScreenshotPaths() {
+std::vector<std::filesystem::path> ScreenshotsListPopup::getScreenshotPaths() {
     auto directory = std::filesystem::path(Mod::get()->getSaveDir() / "screenshots");
     std::vector<std::filesystem::path> paths;
 
@@ -145,8 +166,8 @@ std::vector<std::filesystem::path> ScreenshotsPopup::getScreenshotPaths() {
     return paths;
 }
 
-ScreenshotsPopup* ScreenshotsPopup::create() {
-    auto ret = new ScreenshotsPopup();
+ScreenshotsListPopup* ScreenshotsListPopup::create() {
+    auto ret = new ScreenshotsListPopup();
     if (ret->initAnchored(440.f, 270.f, "GJ_square01.png")) {
         ret->autorelease();
         return ret;

@@ -1,5 +1,5 @@
 #include <Geode/Geode.hpp>
-#include "nodes/ScreenshotsPopup.hpp"
+#include "nodes/ScreenshotsListPopup.hpp"
 
 using namespace geode::prelude;
 
@@ -67,7 +67,7 @@ protected:
     }
 
     void onButton(CCObject*) {
-        ScreenshotsPopup::create()->show();
+        ScreenshotsListPopup::create()->show();
     }
 
     void onCommit() override {}

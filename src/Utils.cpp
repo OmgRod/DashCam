@@ -163,13 +163,21 @@ bool Utils::screenshot() {
 
         if (!success) {
             log::warn("Failed to save screenshot with stb_image_write to {}", path.string());
-            Notification::create("Unable to save screenshot, please ignore next notification.", NotificationIcon::Error)->show();
+            Notification::create("Unable to save screenshot.", NotificationIcon::Error)->show();
         } else {
             log::info("Screenshot saved to {}", path.string());
         }
     }).detach();
 
     return true;
+}
+
+void Utils::setScreenshots(std::vector<std::tuple<int, std::filesystem::path, std::string>> screenshotData) {
+    m_screenshots = screenshotData;
+}
+
+std::vector<std::tuple<int, std::filesystem::path, std::string>> Utils::getScreenshots() {
+    return m_screenshots;
 }
 
 } // namespace dashcam

@@ -21,6 +21,8 @@ namespace dashcam {
         // void renderSceneToTexture();
         // void applyShader(ShaderType shader);
         bool screenshot();
+        void setScreenshots(std::vector<std::tuple<int, std::filesystem::path, std::string>>);
+        std::vector<std::tuple<int, std::filesystem::path, std::string>> getScreenshots();
 
     private:
         CCRenderTexture* rt = nullptr;
@@ -35,5 +37,6 @@ namespace dashcam {
         std::mutex m_mutex;
         std::queue<std::vector<uint8_t>> m_frameQueue;
         std::condition_variable m_cv;
+        std::vector<std::tuple<int, std::filesystem::path, std::string>> m_screenshots;
     };
 }
