@@ -106,7 +106,7 @@ void ScreenshotPopup::deleteImage(CCObject*) {
     });
 }
 
-void ScreenshotPopup::setTextPopupClosed(SetTextPopup* popup, gd::string text) {
+void ScreenshotPopup::setTextPopupClosed(SetTextPopup* popup, std::string text) {
     auto oldPath = std::get<1>(m_screenshotData);
     auto filename = text;
     if (!filename.ends_with(".png")) {

@@ -16,7 +16,7 @@ protected:
     void deleteImage(CCObject*);
     void editImage(CCObject*);
     void openImage(CCObject*);
-    void setTextPopupClosed(SetTextPopup*, gd::string) override;
+    void setTextPopupClosed(SetTextPopup*, std::string) override;
 
 public:
     static ScreenshotPopup* create(std::tuple<int, std::filesystem::path, std::string>, ScreenshotsListPopup*);
