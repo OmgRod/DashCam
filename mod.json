@@ -42,13 +42,13 @@
 			"description": "Configure camera flash effects for screenshots and recordings."
 		},
 		"camera-flash": {
-   "name": "Camera Flash",
+			"name": "Camera Flash",
 			"type": "bool",
 			"default": true,
 			"description": "Enables a camera flash effect on the screen when taking a screenshot. If enabled, the flash may be visible in images when capturing multiple screenshots in quick succession."
 		},
 		"flash-sound": {
-   "name": "Flash Sound",
+			"name": "Flash Sound",
 			"type": "bool",
 			"default": true,
 			"description": "Plays a camera shutter sound effect when a screenshot is taken. Disable if you prefer silent captures."
