@@ -5,6 +5,10 @@
 using namespace geode::prelude;
 
 class ScreenshotsListPopup : public geode::Popup<> {
+private:
+    CCNode* m_scrollContent;
+    ScrollLayer* m_scroll;
+
 protected:
     bool setup() override;
     std::vector<std::filesystem::path> getScreenshotPaths();
@@ -12,4 +16,5 @@ protected:
 
 public:
     static ScreenshotsListPopup* create();
+    void refresh(CCObject*);
 };

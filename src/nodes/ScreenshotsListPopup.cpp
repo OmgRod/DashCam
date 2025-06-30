@@ -7,17 +7,18 @@ using namespace dashcam;
 
 bool ScreenshotsListPopup::setup() {
     this->setTitle("Screenshots");
-
+    
     float scrollWidth = m_mainLayer->getContentWidth() * 0.8f;
     float scrollHeight = m_mainLayer->getContentHeight() * 0.75f;
     float padX = scrollWidth * 0.02f;
     float padY = scrollHeight * 0.02f;
-
-    auto scroll = ScrollLayer::create({ scrollWidth, scrollHeight }, true, true);
-    auto border = Border::create(scroll, {115, 63, 38, 0}, {scrollWidth, scrollHeight}, {padX, padY});
+    
+    m_scroll = ScrollLayer::create({ scrollWidth, scrollHeight }, true, true);
+    auto border = Border::create(m_scroll, {115, 63, 38, 0}, {scrollWidth, scrollHeight}, {padX, padY});
     border->setPosition({ m_mainLayer->getContentWidth() * 0.1f, m_mainLayer->getContentHeight() * 0.125f });
+    m_scrollContent = m_scroll->m_contentLayer;
     m_mainLayer->addChild(border);
-
+    
     float layoutWidth = scrollWidth - padX * 2.f;
     float layoutHeight = scrollHeight - padY * 2.f;
 
@@ -27,7 +28,62 @@ bool ScreenshotsListPopup::setup() {
         ->setAutoScale(false)
         ->setAxisReverse(true)
         ->setAxisAlignment(AxisAlignment::Center);
-    scroll->m_contentLayer->setLayout(scrollLayout);
+    m_scroll->m_contentLayer->setLayout(scrollLayout);
+
+    refresh(nullptr);
+
+    return true;
+}
+
+void ScreenshotsListPopup::onScreenshotClicked(CCObject* sender) {
+    auto item = static_cast<CCMenuItemSpriteExtra*>(sender);
+    int tag = item->getTag();
+
+    const auto& screenshots = Utils::shared()->getScreenshots();
+    for (const auto& tup : screenshots) {
+        if (std::get<0>(tup) == tag) {
+            ScreenshotPopup::create(tup, this)->show();
+            break;
+        }
+    }
+}
+
+std::vector<std::filesystem::path> ScreenshotsListPopup::getScreenshotPaths() {
+    auto directory = std::filesystem::path(Mod::get()->getSaveDir() / "screenshots");
+    std::vector<std::filesystem::path> paths;
+
+    if (std::filesystem::exists(directory) && std::filesystem::is_directory(directory)) {
+        for (const auto& entry : std::filesystem::directory_iterator(directory)) {
+            if (entry.is_regular_file()) {
+                paths.push_back(entry.path());
+            }
+        }
+        std::sort(paths.begin(), paths.end());
+    }
+
+    return paths;
+}
+
+ScreenshotsListPopup* ScreenshotsListPopup::create() {
+    auto ret = new ScreenshotsListPopup();
+    if (ret->initAnchored(440.f, 270.f, "GJ_square01.png")) {
+        ret->autorelease();
+        return ret;
+    }
+
+    delete ret;
+    return nullptr;
+}
+
+void ScreenshotsListPopup::refresh(CCObject*) {
+    float scrollWidth = m_mainLayer->getContentWidth() * 0.8f;
+    float scrollHeight = m_mainLayer->getContentHeight() * 0.75f;
+    float padX = scrollWidth * 0.02f;
+    float padY = scrollHeight * 0.02f;
+    float layoutWidth = scrollWidth - padX * 2.f;
+    float layoutHeight = scrollHeight - padY * 2.f;
+
+    float rowGap = layoutWidth * 0.03f;
 
     const int maxPerRow = 3;
     float rowPadding = layoutWidth * 0.03f;
@@ -42,6 +98,8 @@ bool ScreenshotsListPopup::setup() {
     std::vector<std::tuple<int, std::filesystem::path, std::string>> screenshotData;
 
     float maxContentWidth = 0.f;
+
+    m_scrollContent->removeAllChildrenWithCleanup(true);
 
     for (size_t i = 0; i < screenshots.size(); ++i) {
         if (count % maxPerRow == 0) {
@@ -69,17 +127,26 @@ bool ScreenshotsListPopup::setup() {
                 ->setAutoScale(false)
                 ->setAxisAlignment(AxisAlignment::Center);
             row->setLayout(rowLayout);
-            scroll->m_contentLayer->addChild(row);
+            m_scrollContent->addChild(row);
         }
 
-        auto sprite = CCSprite::create(screenshots[i].string().c_str());
-        if (!sprite) continue;
+        auto sprite = LazySprite::create({ maxSpriteWidth, maxSpriteHeight });
+        sprite->setAutoResize(true);
 
-        auto spriteSize = sprite->getContentSize();
-        float scaleX = maxSpriteWidth / spriteSize.width;
-        float scaleY = maxSpriteHeight / spriteSize.height;
-        float scale = std::min({ scaleX, scaleY, 1.f });
-        sprite->setScale(scale);
+        sprite->setLoadCallback([sprite, maxSpriteWidth, maxSpriteHeight](Result<> res) {
+            if (res) {
+                auto size = sprite->getContentSize();
+                float scaleX = maxSpriteWidth / size.width;
+                float scaleY = maxSpriteHeight / size.height;
+                float scale = std::min({ scaleX, scaleY, 1.f });
+                sprite->setScale(scale);
+            } else {
+                log::error("Failed to load screenshot: {}", res.unwrapErr());
+                sprite->initWithSpriteFrameName("exMark_001.png");
+            }
+        });
+
+        sprite->loadFromFile(screenshots[i]);
 
         auto item = CCMenuItemSpriteExtra::create(
             sprite,
@@ -120,59 +187,17 @@ bool ScreenshotsListPopup::setup() {
     }
 
     float totalHeight = 0.f;
-    auto children = scroll->m_contentLayer->getChildren();
+    auto children = m_scrollContent->getChildren();
     for (size_t i = 0; i < children->count(); ++i) {
         auto row = static_cast<CCNode*>(children->objectAtIndex(i));
         totalHeight += row->getContentSize().height;
         if (i > 0) totalHeight += rowGap;
     }
 
-    scroll->m_contentLayer->setContentHeight(totalHeight);
-    scroll->m_contentLayer->setContentWidth(std::max(layoutWidth, maxContentWidth));
-    scroll->m_contentLayer->updateLayout();
-    scroll->scrollToTop();
+    m_scrollContent->setContentHeight(totalHeight);
+    m_scrollContent->setContentWidth(std::max(layoutWidth, maxContentWidth));
+    m_scrollContent->updateLayout();
+    m_scroll->scrollToTop();
 
     Utils::shared()->setScreenshots(screenshotData);
-
-    return true;
-}
-
-void ScreenshotsListPopup::onScreenshotClicked(CCObject* sender) {
-    auto item = static_cast<CCMenuItemSpriteExtra*>(sender);
-    int tag = item->getTag();
-
-    const auto& screenshots = Utils::shared()->getScreenshots();
-    for (const auto& tup : screenshots) {
-        if (std::get<0>(tup) == tag) {
-            ScreenshotPopup::create(tup)->show();
-            break;
-        }
-    }
-}
-
-std::vector<std::filesystem::path> ScreenshotsListPopup::getScreenshotPaths() {
-    auto directory = std::filesystem::path(Mod::get()->getSaveDir() / "screenshots");
-    std::vector<std::filesystem::path> paths;
-
-    if (std::filesystem::exists(directory) && std::filesystem::is_directory(directory)) {
-        for (const auto& entry : std::filesystem::directory_iterator(directory)) {
-            if (entry.is_regular_file()) {
-                paths.push_back(entry.path());
-            }
-        }
-        std::sort(paths.begin(), paths.end());
-    }
-
-    return paths;
-}
-
-ScreenshotsListPopup* ScreenshotsListPopup::create() {
-    auto ret = new ScreenshotsListPopup();
-    if (ret->initAnchored(440.f, 270.f, "GJ_square01.png")) {
-        ret->autorelease();
-        return ret;
-    }
-
-    delete ret;
-    return nullptr;
 }

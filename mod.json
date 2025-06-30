@@ -75,6 +75,9 @@
 		"files": [
 			"res/shaders/*",
 			"res/sounds/*"
+		],
+		"sprites": [
+			"res/sprites/*"
 		]
 	}
 }
