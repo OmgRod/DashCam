@@ -10,6 +10,7 @@ private:
     std::tuple<int, std::filesystem::path, std::string> m_screenshotData;
     ScreenshotsListPopup* m_parentPopup;
     LazySprite* m_screenshot;
+    CCMenu* m_mainMenu;
 
 protected:
     bool setup(std::tuple<int, std::filesystem::path, std::string>, ScreenshotsListPopup*) override;
@@ -17,6 +18,7 @@ protected:
     void editImage(CCObject*);
     void openImage(CCObject*);
     void setTextPopupClosed(SetTextPopup*, gd::string) override;
+    // void onClose(CCObject*) override;
 
 public:
     static ScreenshotPopup* create(std::tuple<int, std::filesystem::path, std::string>, ScreenshotsListPopup*);

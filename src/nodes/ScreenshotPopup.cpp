@@ -45,12 +45,12 @@ bool ScreenshotPopup::setup(std::tuple<int, std::filesystem::path, std::string> 
         ->setCrossAxisDirection(AxisDirection::TopToBottom)
         ->setMainAxisScaling(AxisScaling::Fit);
 
-    auto menu = CCMenu::create();
-    menu->setContentSize({ 40.f, m_mainLayer->getContentSize().height * 0.6f });
-    menu->setPosition({ 30.f, m_mainLayer->getContentSize().height * 0.5f });
-    menu->setAnchorPoint({ 0.5f, 0.5f });
-    menu->setLayout(menuLayout);
-    m_mainLayer->addChild(menu);
+    m_mainMenu = CCMenu::create();
+    m_mainMenu->setContentSize({ 40.f, m_mainLayer->getContentSize().height * 0.6f });
+    m_mainMenu->setPosition({ 30.f, m_mainLayer->getContentSize().height * 0.5f });
+    m_mainMenu->setAnchorPoint({ 0.5f, 0.5f });
+    m_mainMenu->setLayout(menuLayout);
+    m_mainLayer->addChild(m_mainMenu);
 
     auto editIcon = CCSprite::create("edit.png"_spr);
     auto editSprite = CircleButtonSprite::create(
@@ -65,7 +65,7 @@ bool ScreenshotPopup::setup(std::tuple<int, std::filesystem::path, std::string> 
         this,
         menu_selector(ScreenshotPopup::editImage)
     );
-    menu->addChild(editButton);
+    m_mainMenu->addChild(editButton);
 
     auto deleteSprite = CCSprite::createWithSpriteFrameName("GJ_trashBtn_001.png");
     auto deleteButton = CCMenuItemSpriteExtra::create(
@@ -73,9 +73,9 @@ bool ScreenshotPopup::setup(std::tuple<int, std::filesystem::path, std::string> 
         this,
         menu_selector(ScreenshotPopup::deleteImage)
     );
-    menu->addChild(deleteButton);
+    m_mainMenu->addChild(deleteButton);
 
-    menu->updateLayout();
+    m_mainMenu->updateLayout();
 
     return true;
 }
@@ -100,7 +100,9 @@ void ScreenshotPopup::deleteImage(CCObject*) {
                 FLAlertLayer::create("Error", fmt::format("Failed to delete the screenshot file: {}", ec), "OK")->show();
             } else {
                 onClose(nullptr);
-                m_parentPopup->refresh(nullptr);
+                if (m_parentPopup) {
+                    m_parentPopup->onClose(nullptr);
+                }
             }
         }
     });
@@ -123,7 +125,7 @@ void ScreenshotPopup::setTextPopupClosed(SetTextPopup* popup, gd::string text) {
     onClose(nullptr);
 
     if (m_parentPopup) {
-        m_parentPopup->refresh(nullptr);
+        m_parentPopup->onClose(nullptr);
     }
 }
 
@@ -148,3 +150,18 @@ void ScreenshotPopup::editImage(CCObject*) {
 void ScreenshotPopup::openImage(CCObject*) {
     file::openFolder(std::get<1>(m_screenshotData));
 }
+
+/*void ScreenshotPopup::onClose(CCObject* sender) {
+    if (m_buttonMenu) {
+        m_buttonMenu->onExit();
+        m_buttonMenu->removeFromParentAndCleanup(true);
+        m_buttonMenu = nullptr;
+    }
+    if (m_mainMenu) {
+        m_mainMenu->onExit();
+        m_mainMenu->removeFromParentAndCleanup(true);
+        m_mainMenu = nullptr;
+    }
+    
+    Popup::onClose(sender);
+}*/

@@ -7,28 +7,6 @@ using namespace dashcam;
 
 bool ScreenshotsListPopup::setup() {
     this->setTitle("Screenshots");
-    
-    float scrollWidth = m_mainLayer->getContentWidth() * 0.8f;
-    float scrollHeight = m_mainLayer->getContentHeight() * 0.75f;
-    float padX = scrollWidth * 0.02f;
-    float padY = scrollHeight * 0.02f;
-    
-    m_scroll = ScrollLayer::create({ scrollWidth, scrollHeight }, true, true);
-    auto border = Border::create(m_scroll, {115, 63, 38, 0}, {scrollWidth, scrollHeight}, {padX, padY});
-    border->setPosition({ m_mainLayer->getContentWidth() * 0.1f, m_mainLayer->getContentHeight() * 0.125f });
-    m_scrollContent = m_scroll->m_contentLayer;
-    m_mainLayer->addChild(border);
-    
-    float layoutWidth = scrollWidth - padX * 2.f;
-    float layoutHeight = scrollHeight - padY * 2.f;
-
-    auto scrollLayout = ColumnLayout::create();
-    float rowGap = layoutWidth * 0.03f;
-    scrollLayout->setGap(rowGap)
-        ->setAutoScale(false)
-        ->setAxisReverse(true)
-        ->setAxisAlignment(AxisAlignment::Center);
-    m_scroll->m_contentLayer->setLayout(scrollLayout);
 
     refresh(nullptr);
 
@@ -83,10 +61,8 @@ void ScreenshotsListPopup::refresh(CCObject*) {
     float layoutWidth = scrollWidth - padX * 2.f;
     float layoutHeight = scrollHeight - padY * 2.f;
 
-    float rowGap = layoutWidth * 0.03f;
-
     const int maxPerRow = 3;
-    float rowPadding = layoutWidth * 0.03f;
+    float rowPadding = layoutWidth * 0.02f;
     float maxSpriteWidth = layoutWidth * 0.34f;
     float maxSpriteHeight = layoutHeight * 0.3f;
 
@@ -98,6 +74,24 @@ void ScreenshotsListPopup::refresh(CCObject*) {
     std::vector<std::tuple<int, std::filesystem::path, std::string>> screenshotData;
 
     float maxContentWidth = 0.f;
+
+    if (m_border) {
+        m_border->removeFromParentAndCleanup(true);
+    }
+
+    m_scroll = ScrollLayer::create({ scrollWidth, scrollHeight }, true, true);
+    m_border = Border::create(m_scroll, {115, 63, 38, 0}, {scrollWidth, scrollHeight}, {padX, padY});
+    m_border->setPosition({ m_mainLayer->getContentWidth() * 0.1f, m_mainLayer->getContentHeight() * 0.125f });
+    m_scrollContent = m_scroll->m_contentLayer;
+    m_mainLayer->addChild(m_border);
+
+    auto scrollLayout = ColumnLayout::create();
+    float rowGap = layoutWidth * 0.03f;
+    scrollLayout->setGap(rowGap)
+        ->setAutoScale(false)
+        ->setAxisReverse(true)
+        ->setAxisAlignment(AxisAlignment::Center);
+    m_scroll->m_contentLayer->setLayout(scrollLayout);
 
     m_scrollContent->removeAllChildrenWithCleanup(true);
 
@@ -122,11 +116,14 @@ void ScreenshotsListPopup::refresh(CCObject*) {
             }
 
             row = CCMenu::create();
+            row->setTouchEnabled(true);
+
             auto rowLayout = RowLayout::create();
             rowLayout->setGap(rowPadding)
                 ->setAutoScale(false)
                 ->setAxisAlignment(AxisAlignment::Center);
             row->setLayout(rowLayout);
+
             m_scrollContent->addChild(row);
         }
 
@@ -187,9 +184,9 @@ void ScreenshotsListPopup::refresh(CCObject*) {
     }
 
     float totalHeight = 0.f;
-    auto children = m_scrollContent->getChildren();
-    for (size_t i = 0; i < children->count(); ++i) {
-        auto row = static_cast<CCNode*>(children->objectAtIndex(i));
+    auto allChildren = m_scrollContent->getChildren();
+    for (size_t i = 0; i < allChildren->count(); ++i) {
+        auto row = static_cast<CCNode*>(allChildren->objectAtIndex(i));
         totalHeight += row->getContentSize().height;
         if (i > 0) totalHeight += rowGap;
     }
@@ -200,4 +197,8 @@ void ScreenshotsListPopup::refresh(CCObject*) {
     m_scroll->scrollToTop();
 
     Utils::shared()->setScreenshots(screenshotData);
+}
+
+void ScreenshotsListPopup::onClose(CCObject* sender) {
+    Popup::onClose(sender);
 }

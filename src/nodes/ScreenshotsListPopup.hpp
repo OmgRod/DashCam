@@ -8,6 +8,7 @@ class ScreenshotsListPopup : public geode::Popup<> {
 private:
     CCNode* m_scrollContent;
     ScrollLayer* m_scroll;
+    Border* m_border;
 
 protected:
     bool setup() override;
@@ -17,4 +18,5 @@ protected:
 public:
     static ScreenshotsListPopup* create();
     void refresh(CCObject*);
+    void onClose(CCObject*) override;
 };
